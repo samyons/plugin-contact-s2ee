@@ -26,6 +26,14 @@ export const SideNav = () => {
                         }}>
                         Toutes les entreprises
                     </SubNavLink>
+                    <SubNavLink
+                        key={3}
+                        tag={NavLink}
+                        to={{
+                            pathname: '/plugins/plugin-contact-s2ee/contacter',
+                        }}>
+                        Contacter
+                    </SubNavLink>
 
                 </SubNavSection>
             </SubNavSections>

@@ -15,21 +15,6 @@ export default {
       Component: () => import('./pages/App'),
     });
 
-    // app.addMenuLink({
-    //   to: `plugins/${PLUGIN_ID}/companies`,
-    //   icon: PluginIcon,
-    //   intlLabel: {
-    //     id: `${PLUGIN_ID}.companies`,
-    //     defaultMessage: 'Companies',
-    //   },
-    //   Component: async () => {  
-    //     const CompanyList = await import('./pages/CompanyList');
-
-    //     return CompanyList;
-    //   },
-
-    // }); 
-
     app.registerPlugin({
       id: PLUGIN_ID,
       initializer: Initializer,

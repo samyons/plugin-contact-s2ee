@@ -5,6 +5,7 @@ import { HomePage } from '../Home';
 import { CompanyList } from '../AllCompanies';
 import { SideNav } from '../../components/SideNav';
 import { CommonProviders } from '../../providers/CommonProviders';
+import { AssignedCompaniesList } from '../AssignedCompaniesList';
 
 const InnerApp = () => {
   return (
@@ -12,6 +13,7 @@ const InnerApp = () => {
       <Routes>
         <Route index element={<HomePage />} />
         <Route path="/companies" element={<CompanyList />} />
+        <Route path="/contacter" element={<AssignedCompaniesList />} />
         <Route path="*" element={<Page.Error />} />
       </Routes> 
     </Layouts.Root>
