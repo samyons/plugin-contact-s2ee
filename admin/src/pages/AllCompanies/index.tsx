@@ -1,31 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
-    Thead,
-    Tr,
-    Td,
-    Th,
-    Tbody,
     Typography,
     Box,
     Loader,
-    Checkbox,
     Flex,
     Button,
-    EmptyStateLayout,
 } from '@strapi/design-system';
-import { useFetchClient } from '@strapi/strapi/admin';
+import { BackButton, Layouts, Page, useFetchClient } from '@strapi/admin/strapi-admin';
 import { getCompanyStatus } from '../../utils/getCompanyStatus';
 import { fetchCompanies, fetchAdminUsers } from '../../api/api';
 import { AssignUserModal } from './AssignUserModal';
- 
+import { Table } from '../../components/Table'; // Assurez-vous que le chemin d'importation est correct
+
 interface Company {
     id: number;
     documentId: string;
     name: string;
     sector: string;
     state: string;
-    admin_user: any | null; 
+    admin_user: any | null;
 }
 
 interface ContactMember {
@@ -39,8 +32,10 @@ export const CompanyList = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [contactMembers, setContactMembers] = useState<ContactMember[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+    const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([]);
     const [showModal, setShowModal] = useState(false);
+    const [sortBy, setSortBy] = useState<string>('name');
+    const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
 
     async function loadData() {
         try {
@@ -59,17 +54,24 @@ export const CompanyList = () => {
         loadData();
     }, []);
 
-    const allSelected = companies.length > 0 && selectedCompanies.length === companies.length;
+    const handleSort = (name: string, order: 'ASC' | 'DESC') => {
+        setSortBy(name);
+        setSortOrder(order);
 
-    const toggleSelectAll = () => {
-        if (allSelected) setSelectedCompanies([]);
-        else setSelectedCompanies(companies.map((c) => c.documentId));
-    };
+        const sortedCompanies = [...companies].sort((a, b) => {
+            const aValue = a[name as keyof Company];
+            const bValue = b[name as keyof Company];
 
-    const toggleSelect = (documentId: string) => {
-        setSelectedCompanies((prev) =>
-            prev.includes(documentId) ? prev.filter((cid) => cid !== documentId) : [...prev, documentId]
-        );
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                return order === 'ASC'
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
+            }
+
+            return 0;
+        });
+
+        setCompanies(sortedCompanies);
     };
 
     const handleCompaniesUpdated = (updatedCompanies: React.SetStateAction<Company[]>) => {
@@ -82,24 +84,42 @@ export const CompanyList = () => {
         return admin_user.firstname + ' ' + admin_user.lastname;
     }
 
+    const headers = [
+        { name: 'name', label: 'Nom', sortable: true },
+        { name: 'sector', label: 'Secteur', sortable: true },
+        { name: 'admin_user', label: 'Assignée à', sortable: false },
+        { name: 'state', label: 'Statut', sortable: true },
+    ];
+
     if (loading) {
         return (
             <Box padding={8} background="neutral100">
                 <Loader>Chargement des entreprises...</Loader>
             </Box>
         );
-    }
+    } 
 
     return (
-        <Box padding={8} background="neutral100">
-            <Flex justifyContent="space-between" alignItems="center" marginBottom={4}>
-                <Typography variant="alpha">Liste des entreprises</Typography>
-                {selectedCompanies.length > 0 && (
+        <Page.Main>
+        <Page.Title>Liste des entreprises</Page.Title>
+        <Layouts.Header
+        subtitle={'Toutes les entreprises enregistrées dans le système'}
+        title={"Liste des entreprises"} 
+      />
+        <Layouts.Content>  
+            <Table.Root
+                headers={headers}
+                rows={companies}
+                selectedRows={selectedCompanies}
+                onSelectedRowsChange={setSelectedCompanies}
+                isLoading={loading}
+            >
+                <Table.ActionBar>
                     <Flex gap={2}>
                         <AssignUserModal
                             open={showModal}
                             onOpenChange={() => setShowModal(!showModal)}
-                            selectedCompanies={selectedCompanies}
+                            selectedCompanies={selectedCompanies.map(company => company.documentId)}
                             contactMembers={contactMembers}
                             onCompaniesUpdated={handleCompaniesUpdated}
                         />
@@ -107,58 +127,36 @@ export const CompanyList = () => {
                             Annuler sélection
                         </Button>
                     </Flex>
-                )}
-            </Flex>
-            {companies.length === 0 ? (
-                <EmptyStateLayout content="Aucune entreprise trouvée" />
-            ) : (
-                <Table>
-                    <Thead>
-                        <Tr>
-                            <Th>
-                                <Checkbox aria-label="Sélectionner tout" checked={allSelected} onCheckedChange={toggleSelectAll} />
-                            </Th>
-                            <Th>
-                                <Typography variant="sigma">Nom</Typography>
-                            </Th>
-                            <Th>
-                                <Typography variant="sigma">Secteur</Typography>
-                            </Th>
-                            <Th>
-                                <Typography variant="sigma">Assignée à</Typography>
-                            </Th>
-                            <Th>
-                                <Typography variant="sigma">Statut</Typography>
-                            </Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {companies.map((company) => (
-                            <Tr key={company.documentId}>
-                                <Td>
-                                    <Checkbox
-                                        aria-label={`Sélectionner ${company.name}`}
-                                        checked={selectedCompanies.includes(company.documentId)}
-                                        onCheckedChange={() => toggleSelect(company.documentId)}
-                                    />
-                                </Td>
-                                <Td>
-                                    <Typography>{company.name}</Typography>
-                                </Td>
-                                <Td>
-                                    <Typography>{company.sector}</Typography>
-                                </Td>
-                                <Td>
-                                    <Typography>{getContactMember(company.admin_user)}</Typography>
-                                </Td>
-                                <Td>
-                                    <Typography>{getCompanyStatus(company.state)}</Typography>
-                                </Td>
-                            </Tr>
+                </Table.ActionBar>
+                <Table.Content>
+                    <Table.Head>
+                        <Table.HeaderCheckboxCell />
+                        {headers.map((header) => (
+                            <Table.HeaderCell
+                                key={header.name}
+                                name={header.name}
+                                label={header.label}
+                                sortable={header.sortable}
+                                onSort={handleSort}
+                                currentSort={sortBy}
+                                currentOrder={sortOrder}
+                            />
                         ))}
-                    </Tbody>
-                </Table>
-            )}
-        </Box>
+                    </Table.Head>
+                    <Table.Body>
+                        {companies.map((company) => (
+                            <Table.Row key={company.documentId}>
+                                <Table.CheckboxCell id={company.id} />
+                                <Table.Cell>{company.name}</Table.Cell>
+                                <Table.Cell>{company.sector}</Table.Cell>
+                                <Table.Cell>{getContactMember(company.admin_user)}</Table.Cell>
+                                <Table.Cell>{getCompanyStatus(company.state)}</Table.Cell>
+                            </Table.Row>
+                        ))}
+                    </Table.Body>
+                </Table.Content>
+            </Table.Root>
+        </Layouts.Content>
+        </Page.Main>
     );
 };
