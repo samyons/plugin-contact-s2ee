@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 export const SideNav = () => {
 
     return (
-        <SubNav aria-label="Plugin Contact S2EE Navigation">
+        <SubNav aria-label="Plugin Contact S2EE">
             <SubNavHeader label="Contact S2EE" />
             <SubNavSections>
                 <SubNavSection key={0} label="Gestion">
