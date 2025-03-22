@@ -387,3 +387,4 @@ namespace Table {
 }
 
 export { Table, useTable };
+export type { TableHeader, BaseRow };

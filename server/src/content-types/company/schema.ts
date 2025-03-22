@@ -1,3 +1,7 @@
+// plugins/plugin-contact-s2ee/server/content-types/company.ts
+
+import { GLOBAL_STATUS_VALUES } from '../../utils/globalStatus';
+
 export default {
   kind: 'collectionType',
   collectionName: 'company',
@@ -19,30 +23,45 @@ export default {
   },
   attributes: {
     name: {
-      type: "string"
+      type: "string",
+      required: true,
     },
     sector: {
-      type: "string"
+      type: "string",
     },
-    admin_user: {
+    assignedTo: {
       type: "relation",
       relation: "oneToOne",
       target: "admin::user",
     },
-    state: {
-      type: 'enumeration',
-      enum: [
-        'TO_PREPARE',     // À préparer / En préparation
-        'TO_CALL',        // À contacter (premier appel)
-        'CONTACTED',      // Contactée
-        'INTERESTED',     // Intéressée (mail à envoyer)
-        'FORM_SENT',      // Formulaire envoyé
-        'REMINDER',       // Relance
-        'CONFIRMED',      // Confirmée
-        'NOT_INTERESTED', // Non intéressée
-        'ABANDONED',      // Abandonnée / Sans réponse
-      ],
-      default: 'TO_PREPARE',
+    contacts: {
+      type: "relation",
+      relation: "oneToMany",
+      target: "plugin::plugin-contact-s2ee.contact",
+      mappedBy: "company"
     },
+    principalContact: {
+      type: "relation",
+      relation: "oneToOne",
+      target: "plugin::plugin-contact-s2ee.contact"
+    },
+    isPriority: {
+      type: "boolean",
+      default: false,
+    },
+    comments: {
+      type: "text",
+    },
+    globalStatus: {
+      type: 'enumeration',
+      enum: GLOBAL_STATUS_VALUES,
+      default: 'A_CONTACTER',
+    },
+    actions: {
+      type: "relation",
+      relation: "oneToMany",
+      target: "plugin::plugin-contact-s2ee.action",
+      mappedBy: "company"
+    }
   }
 };

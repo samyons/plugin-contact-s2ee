@@ -1,11 +1,12 @@
 import { Layouts, Page } from '@strapi/strapi/admin';
 import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 
-import { HomePage } from '../Home';
-import { CompanyList } from '../AllCompanies';
-import { SideNav } from '../../components/SideNav';
-import { CommonProviders } from '../../providers/CommonProviders';
-import { AssignedCompaniesList } from '../AssignedCompaniesList';
+import { HomePage } from './Home';
+import { CompanyList } from './AllCompanies/AllCompanies';
+import { SideNav } from '../components/SideNav';
+import { CommonProviders } from '../providers/CommonProviders';
+import { Contact } from './Contact/Contact';
+import { CompanyActions } from './CompanyActions/CompanyActions';
 
 const InnerApp = () => {
   return (
@@ -13,7 +14,8 @@ const InnerApp = () => {
       <Routes>
         <Route index element={<HomePage />} />
         <Route path="/companies" element={<CompanyList />} />
-        <Route path="/contacter" element={<AssignedCompaniesList />} />
+        <Route path="/contacter" element={<Contact />} />
+        <Route path="/contacter/company-actions/:companyDocumentId" element={<CompanyActions />} />
         <Route path="*" element={<Page.Error />} />
       </Routes> 
     </Layouts.Root>
